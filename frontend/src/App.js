@@ -12,11 +12,11 @@ var socket = socketIOClient(ENDPOINT,{
 const App = () => {
       
     const [input, setInput] = React.useState("")
-    const [room, setRoom] = React.useState("")
+    const [channel, setChannel] = React.useState("")
     const [user, setUser] = React.useState("")
     const [elt, setelt] = React.useState([])
     const [selt, setselt] = React.useState(null)
-    const [roomlist, setRoomlist] = React.useState([])
+    const [channelList, setChannellist] = React.useState([])
     const [userlist, setUserlist] = React.useState([])
     // const [suser, setSuser] = React.useState(null)
 
@@ -29,7 +29,7 @@ const App = () => {
         setselt(data)
       })
       
-      socket.on('roomusers', msg =>{
+      socket.on('channelusers', msg =>{
         let data = JSON.parse(msg)
         const uniquedata = data.filter((elem, pos) => {
           return data.indexOf(elem) == pos;
@@ -37,10 +37,10 @@ const App = () => {
         setUserlist(uniquedata)
       })
 
-      socket.on('room', msg =>{
+      socket.on('channel', msg =>{
         const data = JSON.parse(msg)
         // console.log(data)
-        setRoomlist(data)
+        setChannellist(data)
       })
 
       
@@ -50,8 +50,8 @@ const App = () => {
       return ()=>{
         socket.off('message')
         socket.off('log')
-        socket.off('room')
-        socket.off('roomusers')
+        socket.off('channel')
+        socket.off('channelusers')
       }
     },[])
 
@@ -69,7 +69,7 @@ const App = () => {
     const send = () =>{
       const isUnicast = !isBroadCast && (toUser!=='')
 
-      if(room==="" && !isBroadCast && !isUnicast){
+      if(channel==="" && !isBroadCast && !isUnicast){
         alert("Either Join a chatroom or Broadcast or use Direct Messaging")
         return
       }
@@ -85,7 +85,7 @@ const App = () => {
         const data = {
           time: new Date(),
           user: user,
-          room: room,
+          channel: channel,
           data: reader.result,
           type: "image",
           broadcast: Number(isBroadCast),
@@ -103,7 +103,7 @@ const App = () => {
       const data = {
         time: new Date(),
         user: user,
-        room: room,
+        channel: channel,
         data: input,
         type: "text",
         broadcast: Number(isBroadCast),
@@ -119,14 +119,14 @@ const App = () => {
   const Connect = () => {
     setConnected(true)
     socket.emit('join',JSON.stringify({
-      room:room,
+      channel:channel,
       user:user, 
     }))
 
     socket.emit('message', JSON.stringify({
       time: new Date(),
       user: '',
-      room: room,
+      channel: channel,
       data: `${user} has joined the Room!!`,
       type: "text",
       broadcast: 0,
@@ -134,7 +134,7 @@ const App = () => {
       toUser: ''
     }))
 
-    axios.post('http://localhost:8080/chat', {room:room, user:user}).then(res =>{
+    axios.post('http://localhost:8080/chat', {channel:channel, user:user}).then(res =>{
       console.log(res)
       if(res.status===200)
         setelt(res.data)
@@ -161,7 +161,7 @@ const App = () => {
     
   }
   const getGM = async () =>{
-    if(room===""){
+    if(channel===""){
       alert("Join a room first")
       return
     }
@@ -169,7 +169,7 @@ const App = () => {
     setGm(!gm)
 
     try{
-      const res = await axios.post('http://localhost:8080/chat', {room:room, user:user})
+      const res = await axios.post('http://localhost:8080/chat', {channel:channel, user:user})
       console.log(res.data)
       if(res.status===200)
       setelt(res.data)
@@ -184,26 +184,26 @@ const App = () => {
       <div className="App">
       <h1 className="p-3"><strong><span style={{color:"blue"}}>B</span>Chat</strong> A Multi Room Chat Application</h1> 
       </div>
-      <Scroll rooms={roomlist} users={userlist}/>
+      <Scroll rooms={channelList} users={userlist}/>
       <h1 style={{color:"#820000"}}> Room Info </h1>
       {!connected ?
       <div>
     <input value={user} onChange={e=> setUser(e.target.value)} placeholder="@Username" />
-    <input value={room} onChange={e=> setRoom(e.target.value)} placeholder="#Room" />
+    <input value={channel} onChange={e=> setChannel(e.target.value)} placeholder="#Room" />
     <button onClick={Connect}> Connect</button>
     </div>
         :
         
         <div>
           <h4>Username: {user}</h4>
-          <h4>Room: {room}</h4>
+          <h4>Channel: {channel}</h4>
           <button onClick={()=> setConnected(false)}> Edit</button>
           </div>
       }
       <div className = "login" style={{alignSelf:"flex-start", position:"absolute"}}>
         <h2 style={{paddingBottom:"2.5rem"}}>Filtering</h2>
         <div class="row rt">
-            <div class={`neumorphic  variation2 ${dm?"pressed neumorphic--pressed" : "notpressed"}`} role="button" style={{cursor:"pointer"}} style={{cursor:"pointer"}}
+            <div class={`neumorphic  variation2 ${dm?"pressed neumorphic--pressed" : "notpressed"}`} role="button" style={{cursor:"pointer"}}
             onClick={getDM}
             > 
               <h6>Get Direct Messages</h6>
