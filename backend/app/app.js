@@ -33,27 +33,27 @@ subscriber.on('subscribe', (channel, count)=>{
 
 
 //setup listener
-subscriber.subscribe('bchat-chats')
-subscriber2.subscribe('bchat-rooms')
-subscriber3.subscribe('bchat-users')
+subscriber.subscribe('comm-messages')
+subscriber2.subscribe('comm-channels')
+subscriber3.subscribe('comm-users')
 
 
-const ServeChat = require('./routes/serveChats')
+const ServeMessage = require('./routes/serveMessages')
 // const { count } = require("console")
 
 app.use(express.json())
 app.use(cors())
-app.use('/chat', ServeChat)
+app.use('/message', ServeMessage)
 
 
 app.get('/', (req, res)=> {
-    res.send(`<h1>BChat Backend ${SERVER_NAME}</h1>`)
+    res.send(`<h1>273 Communications Backend ${SERVER_NAME}</h1>`)
 })
 
 const mongoose = require('mongoose')
-const ChatSchema = require('./models/chat')
+const MessageSchema = require('./models/message')
 
-mongoose.connect(process.env.MONGO || "mongodb://localhost:27017/BChat",
+mongoose.connect(process.env.MONGO || "mongodb://localhost:27017/DistributedCommunication",
     { useNewUrlParser: true,useUnifiedTopology: true },async (err)=>{
         if(err) console.log(err.message);
         else    console.log('DB connection successful');
@@ -68,17 +68,17 @@ io.on('connection', socket =>{
     socket.emit('log', `app is connected at ${SERVER_NAME}`)
 
     //send initial room info 
-    publisher.lrange('roomBCHAT',0,-1, (err, reply)=>{
-        socket.emit('room', JSON.stringify(reply))
+    publisher.lrange('channel273',0,-1, (err, reply)=>{
+        socket.emit('channel', JSON.stringify(reply))
     })
     
     socket.on('message', async msg =>{
         
-        publisher.publish('bchat-chats', msg)
+        publisher.publish('comm-messages', msg)
         const data = JSON.parse(msg)
 
-        const Chat = new ChatSchema(data)
-        await Chat.save()   
+        const Message = new MessageSchema(data)
+        await Message.save()   
 
         if(data.unicast){
             //handling unicast
@@ -90,20 +90,20 @@ io.on('connection', socket =>{
     socket.on("join", msg =>{
         const data = JSON.parse(msg)
         connections[data.user] = socket.id
-        socket.join(data.room)
+        socket.join(data.channel)
 
         //cache new room
-        publisher.get(data.room, (err, reply)=>{
+        publisher.get(data.channel, (err, reply)=>{
             if(!reply){
-                publisher.set(data.room, '1')
-                publisher.lpush(['roomBCHAT', data.room],(err, r) =>{})
+                publisher.set(data.channel, '1')
+                publisher.lpush(['channel273', data.channel],(err, r) =>{})
                 //dummy publish to make aware the other servers that a new rooms has created
-                publisher.publish('bchat-rooms', "1")
+                publisher.publish('comm-channels', "1")
             }
         })
-            publisher.lpush([`${data.room}_meta`, data.user],(err, r) =>{})
+            publisher.lpush([`${data.channel}_meta`, data.user],(err, r) =>{})
 
-            publisher.publish('bchat-users', data.room)
+            publisher.publish('comm-users', data.channel)
 
         socket.emit('log', `app is connected at ${SERVER_NAME}`)
     })
@@ -130,7 +130,7 @@ subscriber.on('message', (channel, msg) =>{
         }
         else{
             //handling multicast
-            io.to(data.room).emit('message', msg)
+            io.to(data.channel).emit('message', msg)
         }
     } catch (error) {
         console.log(`${SERVER_NAME}: Error Occured, ${error}`)
@@ -139,8 +139,8 @@ subscriber.on('message', (channel, msg) =>{
 })
 
 subscriber2.on('message', (c, m) =>{
-    publisher.lrange('roomBCHAT',0,-1, (err, reply)=>{
-        io.emit('room', JSON.stringify(reply))
+    publisher.lrange('channel273',0,-1, (err, reply)=>{
+        io.emit('channel', JSON.stringify(reply))
     })
 })
 
@@ -150,7 +150,7 @@ subscriber3.on('message', (c, m) =>{
 
     publisher.lrange(`${m}_meta`,0,-1, (err, reply)=>{
         // console.log("sending", reply)
-            io.to(m).emit('roomusers', JSON.stringify(reply))
+            io.to(m).emit('channelusers', JSON.stringify(reply))
     })
 })
 

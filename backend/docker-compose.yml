@@ -8,51 +8,51 @@ services:
     volumes:
       - ./haproxy:/usr/local/etc/haproxy
     depends_on:
-      - chatapp1
-      - chatapp2
-      - chatapp3
-      - chatapp4
+      - comapp1
+      - comapp2
+      - comapp3
+      - comapp4
 
   chatapp1:
-    image: chatapp
-    hostname: 'chatapp1'
+    image: comapp
+    hostname: 'comapp1'
     environment:
-      - SERVER_NAME=chatAPP-1
+      - SERVER_NAME=comAPP-1
       - REDIS_HOST=rds
-      - MONGO=mongodb://mongo:27017/BChat
+      - MONGO=mongodb://mongo:27017/DistributedCommunication
     depends_on: 
       - rds
       - mongo
 
   chatapp2:
-    image: chatapp
-    hostname: 'chatapp2'
+    image: comapp
+    hostname: 'comapp2'
     environment:
-      - SERVER_NAME=chatAPP-2
+      - SERVER_NAME=comAPP-2
       - REDIS_HOST=rds
-      - MONGO=mongodb://mongo:27017/BChat
+      - MONGO=mongodb://mongo:27017/DistributedCommunication
     depends_on: 
       - rds
       - mongo
 
   chatapp3:
-    image: chatapp
-    hostname: 'chatapp3'
+    image: comapp
+    hostname: 'comapp3'
     environment:
-      - SERVER_NAME=chatAPP-3
+      - SERVER_NAME=comAPP-3
       - REDIS_HOST=rds
-      - MONGO=mongodb://mongo:27017/BChat
+      - MONGO=mongodb://mongo:27017/DistributedCommunication
     depends_on: 
       - rds
       - mongo
 
   chatapp4:
-    image: chatapp
-    hostname: 'chatapp4'
+    image: comapp
+    hostname: 'comapp4'
     environment:
-      - SERVER_NAME=chatAPP-4
+      - SERVER_NAME=comAPP-4
       - REDIS_HOST=rds
-      - MONGO=mongodb://mongo:27017/BChat
+      - MONGO=mongodb://mongo:27017/DistributedCommunication
     depends_on: 
       - rds
       - mongo

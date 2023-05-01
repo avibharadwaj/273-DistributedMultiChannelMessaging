@@ -1,6 +1,6 @@
 const mongoose= require('mongoose');
 
-const ChatSchema=mongoose.Schema({
+const MessageSchema=mongoose.Schema({
     time: Date,
     user: String,
     room: String,
@@ -12,4 +12,4 @@ const ChatSchema=mongoose.Schema({
 });
 
 //gonna shows up in atlas
-module.exports=mongoose.model('Chat', ChatSchema, 'chats');
+module.exports=mongoose.model('Message', MessageSchema, 'messages');
