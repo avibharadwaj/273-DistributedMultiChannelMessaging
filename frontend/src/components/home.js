@@ -5,7 +5,7 @@ import Login from "./login"
 const Home = () => {
 
     const [username, setUsername] = React.useState('');
-    const [room, setRoom] = React.useState('');
+    const [channel, setChannel] = React.useState('');
     const [clicked, setClicked] = React.useState(false);
 
     const join = () => {
@@ -28,8 +28,8 @@ const Home = () => {
       <input type="text" className="neumorphic" 
        placeholder="Room (default: #general)"
         style={{marginBottom:30}}
-        value={room}
-            onChange={e => setRoom(e.target.value)}
+        value={channel}
+            onChange={e => setChannel(e.target.value)}
         />
       {/* <input type="submit" class="fadeIn fourth" value="Log In"> */}
             <div class={`neumorphic  variation2 ${clicked?"pressed neumorphic--pressed" : "notpressed"}`} role="button" style={{cursor:"pointer"}} onClick={join}>

@@ -1,7 +1,7 @@
 import React from "react"
 import "./leftscroll.css"
-const Scroll = ({rooms, users}) =>{
-  const elts = rooms.map(r =>{
+const Scroll = ({channels, users}) =>{
+  const elts = channels.map(r =>{
     return(
         <li class="nav-item">
             <div class="nav-link">
